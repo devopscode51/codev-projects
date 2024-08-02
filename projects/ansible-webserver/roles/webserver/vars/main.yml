@@ -1,0 +1,7 @@
+---
+# Variables to control web server installation and configuration
+webserver_type: nginx  # Change to 'apache' for Apache
+webserver_package: nginx  # Change to 'apache2' for Apache
+webserver_service: nginx  # Change to 'apache2' for Apache
+webserver_conf_dir: nginx/sites-available  # Change to 'apache2/sites-available' for Apache
+vhost_template: vhost_nginx.conf.j2  # Change to 'vhost_apache.conf.j2' for Apache

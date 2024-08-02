@@ -1,0 +1,67 @@
+AWSTemplateFormatVersion: '2010-09-09'  
+Description: CloudFormation template to create a VPC, Subnet, EC2 instance, and Security Group  
+  
+Resources:  
+
+  # Create a VPC  
+  MainVPC:  
+    Type: 'AWS::EC2::VPC'  
+    Properties:  
+      CidrBlock: '10.0.0.0/16'  # The main CIDR block for the VPC  
+      Tags:  
+        - Key: Name  
+          Value: MainVPC  
+
+  # Create a Subnet within the VPC  
+  MainSubnet:  
+    Type: 'AWS::EC2::Subnet'  
+    Properties:  
+      VpcId: !Ref MainVPC  # Reference to the VPC created above  
+      CidrBlock: '10.0.1.0/24'  # CIDR block for the subnet  
+      AvailabilityZone: 'us-west-2a' # Change to your desired availability zone  
+      Tags:  
+        - Key: Name  
+          Value: MainSubnet  
+
+  # Create a Security Group allowing access to port 443  
+  AllowHttps:  
+    Type: 'AWS::EC2::SecurityGroup'  
+    Properties:  
+      GroupDescription: Allow HTTPS traffic  
+      VpcId: !Ref MainVPC  # Reference to the VPC  
+      SecurityGroupIngress:  
+        - IpProtocol: tcp  
+          FromPort: 443  
+          ToPort: 443  
+          CidrIp: '0.0.0.0/0'  # Allow from anywhere  
+      SecurityGroupEgress:  
+        - IpProtocol: -1  
+          FromPort: 0  
+          ToPort: 0  
+          CidrIp: '0.0.0.0/0'  # Allow all outbound traffic  
+
+  # Create an EC2 Instance in the Subnet  
+  WebServer:  
+    Type: 'AWS::EC2::Instance'  
+    Properties:  
+      ImageId: 'ami-0c55b159cbfafe1f0'  # Change to appropriate AMI ID  
+      InstanceType: 't2.micro'           # Choose an appropriate instance type  
+      SubnetId: !Ref MainSubnet           # Reference to the subnet  
+      SecurityGroupIds:  
+        - !Ref AllowHttps                 # Reference to the security group  
+      KeyName: my-key-pair                # Change to your SSH key pair name  
+      BlockDeviceMappings:  
+        - DeviceName: '/dev/xvda'  
+          Ebs:  
+            VolumeSize: 100               # Set volume size to 100 GB  
+            VolumeType: gp2                 # General Purpose SSD  
+
+  # Output the public IP of the EC2 instance  
+  Ec2PublicIp:  
+    Description: "Public IP of the newly created EC2 instance"  
+    Value: !GetAtt WebServer.PublicIp  
+
+Outputs:  
+  Ec2PublicIp:  
+    Value: !GetAtt WebServer.PublicIp  
+    Description: "Public IP of the newly created EC2 instance"
